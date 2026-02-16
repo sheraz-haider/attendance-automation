@@ -1,0 +1,7 @@
+.claude
+node_modules
+.env
+screenshots/
+extensions/
+.session-storage.json
+logs/
