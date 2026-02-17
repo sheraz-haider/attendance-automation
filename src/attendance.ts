@@ -89,18 +89,115 @@ async function typeSlowly(page: Page, selector: string, text: string) {
   await element.click();
   await humanDelay(400, 800);
 
-  for (const char of text) {
-    await page.keyboard.type(char, { delay: 70 + Math.random() * 130 });
+  // Mistake configuration
+  const mistakeChance = 0.08; // 8% chance to make a typo
+  const nearbyKeys: Record<string, string[]> = {
+    a: ["q", "s", "z"],
+    b: ["v", "g", "h", "n"],
+    c: ["x", "d", "f", "v"],
+    d: ["s", "e", "r", "f", "c", "x"],
+    e: ["w", "s", "d", "r"],
+    f: ["d", "r", "t", "g", "v", "c"],
+    g: ["f", "t", "y", "h", "b", "v"],
+    h: ["g", "y", "u", "j", "n", "b"],
+    i: ["u", "j", "k", "o"],
+    j: ["h", "u", "i", "k", "m", "n"],
+    k: ["j", "i", "o", "l", "m"],
+    l: ["k", "o", "p"],
+    m: ["n", "j", "k"],
+    n: ["b", "h", "j", "m"],
+    o: ["i", "k", "l", "p"],
+    p: ["o", "l"],
+    q: ["w", "a", "s"],
+    r: ["e", "d", "f", "t"],
+    s: ["a", "w", "e", "d", "z", "x"],
+    t: ["r", "f", "g", "y"],
+    u: ["y", "h", "j", "i"],
+    v: ["c", "f", "g", "b"],
+    w: ["q", "a", "s", "e"],
+    x: ["z", "s", "d", "c"],
+    y: ["t", "g", "h", "u"],
+    z: ["a", "s", "x"],
+    "@": ["2", "!", "#"],
+    ".": [",", "l", "/"],
+  };
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const lowerChar = char.toLowerCase();
+
+    // Decide if making a mistake
+    if (Math.random() < mistakeChance && nearbyKeys[lowerChar]) {
+      // Type a wrong character
+      const wrongChars = nearbyKeys[lowerChar];
+      const wrongChar = wrongChars[Math.floor(Math.random() * wrongChars.length)];
+      await page.keyboard.type(wrongChar, { delay: 70 + Math.random() * 130 });
+
+      // Pause to "realize" the mistake
+      await sleep(200 + Math.random() * 400);
+
+      // Delete the wrong character
+      await page.keyboard.press("Backspace", { delay: 50 + Math.random() * 100 });
+      await sleep(100 + Math.random() * 200);
+
+      // Maybe pause longer (thinking)
+      if (Math.random() < 0.3) {
+        await sleep(300 + Math.random() * 600);
+      }
+    }
+
+    // Type the correct character
+    await page.keyboard.type(char, { delay: 60 + Math.random() * 140 });
+
+    // Random thinking pause
     if (Math.random() < 0.1) {
       await sleep(300 + Math.random() * 500);
     }
   }
 }
 
-async function humanMouseMove(page: Page, x: number, y: number) {
-  const steps = 10 + Math.floor(Math.random() * 10);
-  await page.mouse.move(x, y, { steps });
-  await sleep(100 + Math.random() * 200);
+// Bezier curve point calculation for natural mouse movement
+function bezierPoint(t: number, p0: number, p1: number, p2: number, p3: number): number {
+  const u = 1 - t;
+  return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3;
+}
+
+// Track last mouse position globally for smooth curves
+let lastMouseX = -1;
+let lastMouseY = -1;
+
+async function humanMouseMove(page: Page, targetX: number, targetY: number) {
+  // On first call, initialize from current mouse position or near the target
+  if (lastMouseX < 0 || lastMouseY < 0) {
+    lastMouseX = targetX - 50 + Math.random() * 100;
+    lastMouseY = targetY - 50 + Math.random() * 100;
+  }
+
+  // Generate bezier control points for curved path
+  const cp1x = lastMouseX + (Math.random() - 0.5) * 200;
+  const cp1y = lastMouseY + (Math.random() - 0.5) * 200;
+  const cp2x = targetX + (Math.random() - 0.5) * 150;
+  const cp2y = targetY + (Math.random() - 0.5) * 150;
+
+  const steps = 15 + Math.floor(Math.random() * 20);
+
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    // Ease in-out for acceleration/deceleration
+    const easedT = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+    const x = bezierPoint(easedT, lastMouseX, cp1x, cp2x, targetX);
+    const y = bezierPoint(easedT, lastMouseY, cp1y, cp2y, targetY);
+
+    await page.mouse.move(x, y);
+    // Small random delay per step (speed variation comes from eased position interpolation)
+    const stepDelay = 8 + Math.random() * 20;
+    await sleep(stepDelay);
+  }
+
+  lastMouseX = targetX;
+  lastMouseY = targetY;
+  await sleep(50 + Math.random() * 100);
 }
 
 // --- Stealth ---
