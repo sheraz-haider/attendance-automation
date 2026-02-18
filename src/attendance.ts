@@ -12,6 +12,9 @@ const EMAIL = process.env.HRMS_EMAIL!;
 const PASSWORD = process.env.HRMS_PASSWORD!;
 const CHECK_IN_TIME = process.env.CHECK_IN_TIME || "15:00";
 const CHECK_OUT_TIME = process.env.CHECK_OUT_TIME || "01:30";
+const HAS_GEOLOCATION = !!(process.env.GEOLOCATION_LAT && process.env.GEOLOCATION_LNG);
+const GEOLOCATION_LAT = parseFloat(process.env.GEOLOCATION_LAT || "0");
+const GEOLOCATION_LNG = parseFloat(process.env.GEOLOCATION_LNG || "0");
 const USER_DATA_DIR = path.join(os.homedir(), ".playwright-chrome-profile");
 const SCREENSHOTS_DIR = path.join(__dirname, "..", "screenshots");
 const EXTENSIONS_DIR = path.join(__dirname, "..", "extensions");
@@ -496,12 +499,15 @@ async function main() {
   try {
     log.info("Launching browser...");
     context = await chromium.launchPersistentContext(USER_DATA_DIR, {
-      headless: false,
+      headless: true,
       channel: "chrome",
       viewport: null,
       userAgent:
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
       permissions: ["geolocation"],
+      geolocation: HAS_GEOLOCATION
+        ? { latitude: GEOLOCATION_LAT, longitude: GEOLOCATION_LNG }
+        : undefined,
       args: [
         "--start-maximized",
         "--disable-infobars",
