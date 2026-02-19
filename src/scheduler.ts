@@ -48,7 +48,8 @@ if (!fs.existsSync(LOGS_DIR)) {
 }
 
 function log(message: string) {
-  const line = `[${new Date().toISOString()}] [SCHEDULER] ${message}\n`;
+  const timestamp = new Date().toLocaleString("sv-SE", { timeZone: TIMEZONE }); // YYYY-MM-DD HH:MM:SS
+  const line = `[${timestamp}] [SCHEDULER] ${message}\n`;
   process.stdout.write(line);
   fs.appendFileSync(LOG_FILE, line);
 }
@@ -58,8 +59,7 @@ function randomDelay(): number {
 }
 
 function shouldSkipToday(): boolean {
-  const now = new Date(new Date().toLocaleString("en-US", { timeZone: TIMEZONE }));
-  const dateStr = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  const dateStr = new Date().toLocaleDateString("en-CA", { timeZone: TIMEZONE }); // YYYY-MM-DD
 
   if (SKIP_DATES.has(dateStr)) {
     log(`Skipping today (${dateStr}) — date is in SKIP_DATES.`);

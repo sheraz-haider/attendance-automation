@@ -25,12 +25,12 @@ const LOGS_DIR = path.join(__dirname, "..", "logs");
 // --- Logger ---
 
 function getLogFilePath(): string {
-  const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const date = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" }); // YYYY-MM-DD
   return path.join(LOGS_DIR, `${date}.log`);
 }
 
 function formatLogMessage(level: string, message: string): string {
-  const timestamp = new Date().toISOString();
+  const timestamp = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Karachi" }); // YYYY-MM-DD HH:MM:SS
   return `[${timestamp}] [${level}] ${message}`;
 }
 
@@ -68,8 +68,8 @@ function humanDelay(min = 800, max = 2000) {
 
 function screenshotPath(label: string) {
   const now = new Date();
-  const date = now.toISOString().split("T")[0]; // YYYY-MM-DD
-  const timestamp = now.toISOString().replace(/[:.]/g, "-");
+  const date = now.toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" }); // YYYY-MM-DD
+  const timestamp = now.toLocaleString("sv-SE", { timeZone: "Asia/Karachi" }).replace(" ", "T").replace(/:/g, "-");
   const dailyDir = path.join(SCREENSHOTS_DIR, date);
   if (!fs.existsSync(dailyDir)) {
     fs.mkdirSync(dailyDir, { recursive: true });
@@ -315,8 +315,8 @@ function parseTime(timeStr: string): { hours: number; minutes: number } {
 }
 
 function getCurrentMinutesSinceMidnight(): number {
-  const now = new Date();
-  return now.getHours() * 60 + now.getMinutes();
+  const pkTime = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" }));
+  return pkTime.getHours() * 60 + pkTime.getMinutes();
 }
 
 type Action = "checkin" | "checkout" | "none";
