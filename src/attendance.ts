@@ -408,7 +408,7 @@ async function humanClickButton(page: Page, button: ReturnType<Page["locator"]>,
 
   // Wait for network response
   await page.waitForLoadState("networkidle", { timeout: 15000 });
-  await humanDelay(3000, 5000);
+  await humanDelay(5000, 8000);
 
   // Take post-click screenshot
   const postScreenshot = screenshotPath(`post-${label}`);
@@ -420,6 +420,9 @@ async function humanClickButton(page: Page, button: ReturnType<Page["locator"]>,
 
 async function performCheckIn(page: Page) {
   log.info("--- Starting check-in process ---");
+
+  log.info("Waiting for JS to fully initialize...");
+  await humanDelay(4000, 6000);
 
   const checkInButton = page.locator('button', { hasText: /^[\s\S]*Check In[\s\S]*$/ }).first();
   await checkInButton.waitFor({ state: "visible", timeout: 15000 });
@@ -451,6 +454,9 @@ async function performCheckIn(page: Page) {
 
 async function performCheckOut(page: Page) {
   log.info("--- Starting check-out process ---");
+
+  log.info("Waiting for JS to fully initialize...");
+  await humanDelay(4000, 6000);
 
   const checkOutButton = page.locator('button', { hasText: /^[\s\S]*Check Out[\s\S]*$/ }).first();
   await checkOutButton.waitFor({ state: "visible", timeout: 15000 });
