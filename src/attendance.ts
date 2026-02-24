@@ -1,28 +1,28 @@
-import { chromium, Page, BrowserContext } from "playwright";
-import path from "path";
-import os from "os";
-import fs from "fs";
-import dotenv from "dotenv";
+import { chromium, Page, BrowserContext } from 'playwright';
+import path from 'path';
+import os from 'os';
+import fs from 'fs';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
-const HRMS_URL = "https://hrms.crootive.net/login";
-const HRMS_DASHBOARD = "https://hrms.crootive.net";
+const HRMS_URL = 'https://hrms.crootive.net/login';
+const HRMS_DASHBOARD = 'https://hrms.crootive.net';
 const EMAIL = process.env.HRMS_EMAIL!;
 const PASSWORD = process.env.HRMS_PASSWORD!;
-const CHECK_IN_TIME = process.env.CHECK_IN_TIME || "15:00";
-const CHECK_OUT_TIME = process.env.CHECK_OUT_TIME || "01:30";
-const USER_DATA_DIR = path.join(os.homedir(), ".playwright-chrome-profile");
-const SCREENSHOTS_DIR = path.join(__dirname, "..", "screenshots");
-const EXTENSIONS_DIR = path.join(__dirname, "..", "extensions");
-const ADGUARD_PATH = path.join(EXTENSIONS_DIR, "adguard");
-const SESSION_FILE = path.join(__dirname, "..", ".session-storage.json");
-const LOGS_DIR = path.join(__dirname, "..", "logs");
+const CHECK_IN_TIME = process.env.CHECK_IN_TIME || '20:30';
+const CHECK_OUT_TIME = process.env.CHECK_OUT_TIME || '04:00';
+const USER_DATA_DIR = path.join(os.homedir(), '.playwright-chrome-profile');
+const SCREENSHOTS_DIR = path.join(__dirname, '..', 'screenshots');
+const EXTENSIONS_DIR = path.join(__dirname, '..', 'extensions');
+const ADGUARD_PATH = path.join(EXTENSIONS_DIR, 'adguard');
+const SESSION_FILE = path.join(__dirname, '..', '.session-storage.json');
+const LOGS_DIR = path.join(__dirname, '..', 'logs');
 
 // --- Logger ---
 
 function getLogFilePath(): string {
-  const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   return path.join(LOGS_DIR, `${date}.log`);
 }
 
@@ -32,22 +32,22 @@ function formatLogMessage(level: string, message: string): string {
 }
 
 function writeToLog(formatted: string) {
-  fs.appendFileSync(getLogFilePath(), formatted + "\n");
+  fs.appendFileSync(getLogFilePath(), formatted + '\n');
 }
 
 const log = {
   info(message: string) {
-    const formatted = formatLogMessage("INFO", message);
+    const formatted = formatLogMessage('INFO', message);
     console.log(formatted);
     writeToLog(formatted);
   },
   error(message: string) {
-    const formatted = formatLogMessage("ERROR", message);
+    const formatted = formatLogMessage('ERROR', message);
     console.error(formatted);
     writeToLog(formatted);
   },
   warn(message: string) {
-    const formatted = formatLogMessage("WARN", message);
+    const formatted = formatLogMessage('WARN', message);
     console.warn(formatted);
     writeToLog(formatted);
   },
@@ -56,7 +56,7 @@ const log = {
 // --- Utilities ---
 
 function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function humanDelay(min = 800, max = 2000) {
@@ -65,8 +65,8 @@ function humanDelay(min = 800, max = 2000) {
 
 function screenshotPath(label: string) {
   const now = new Date();
-  const date = now.toISOString().split("T")[0]; // YYYY-MM-DD
-  const timestamp = now.toISOString().replace(/[:.]/g, "-");
+  const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
+  const timestamp = now.toISOString().replace(/[:.]/g, '-');
   const dailyDir = path.join(SCREENSHOTS_DIR, date);
   if (!fs.existsSync(dailyDir)) {
     fs.mkdirSync(dailyDir, { recursive: true });
@@ -80,7 +80,7 @@ async function takeErrorScreenshot(page: Page, label: string) {
     await page.screenshot({ path: filePath, fullPage: true });
     log.error(`Error screenshot saved to ${filePath}`);
   } catch {
-    log.error("Failed to take error screenshot.");
+    log.error('Failed to take error screenshot.');
   }
 }
 
@@ -92,34 +92,34 @@ async function typeSlowly(page: Page, selector: string, text: string) {
   // Mistake configuration
   const mistakeChance = 0.08; // 8% chance to make a typo
   const nearbyKeys: Record<string, string[]> = {
-    a: ["q", "s", "z"],
-    b: ["v", "g", "h", "n"],
-    c: ["x", "d", "f", "v"],
-    d: ["s", "e", "r", "f", "c", "x"],
-    e: ["w", "s", "d", "r"],
-    f: ["d", "r", "t", "g", "v", "c"],
-    g: ["f", "t", "y", "h", "b", "v"],
-    h: ["g", "y", "u", "j", "n", "b"],
-    i: ["u", "j", "k", "o"],
-    j: ["h", "u", "i", "k", "m", "n"],
-    k: ["j", "i", "o", "l", "m"],
-    l: ["k", "o", "p"],
-    m: ["n", "j", "k"],
-    n: ["b", "h", "j", "m"],
-    o: ["i", "k", "l", "p"],
-    p: ["o", "l"],
-    q: ["w", "a", "s"],
-    r: ["e", "d", "f", "t"],
-    s: ["a", "w", "e", "d", "z", "x"],
-    t: ["r", "f", "g", "y"],
-    u: ["y", "h", "j", "i"],
-    v: ["c", "f", "g", "b"],
-    w: ["q", "a", "s", "e"],
-    x: ["z", "s", "d", "c"],
-    y: ["t", "g", "h", "u"],
-    z: ["a", "s", "x"],
-    "@": ["2", "!", "#"],
-    ".": [",", "l", "/"],
+    a: ['q', 's', 'z'],
+    b: ['v', 'g', 'h', 'n'],
+    c: ['x', 'd', 'f', 'v'],
+    d: ['s', 'e', 'r', 'f', 'c', 'x'],
+    e: ['w', 's', 'd', 'r'],
+    f: ['d', 'r', 't', 'g', 'v', 'c'],
+    g: ['f', 't', 'y', 'h', 'b', 'v'],
+    h: ['g', 'y', 'u', 'j', 'n', 'b'],
+    i: ['u', 'j', 'k', 'o'],
+    j: ['h', 'u', 'i', 'k', 'm', 'n'],
+    k: ['j', 'i', 'o', 'l', 'm'],
+    l: ['k', 'o', 'p'],
+    m: ['n', 'j', 'k'],
+    n: ['b', 'h', 'j', 'm'],
+    o: ['i', 'k', 'l', 'p'],
+    p: ['o', 'l'],
+    q: ['w', 'a', 's'],
+    r: ['e', 'd', 'f', 't'],
+    s: ['a', 'w', 'e', 'd', 'z', 'x'],
+    t: ['r', 'f', 'g', 'y'],
+    u: ['y', 'h', 'j', 'i'],
+    v: ['c', 'f', 'g', 'b'],
+    w: ['q', 'a', 's', 'e'],
+    x: ['z', 's', 'd', 'c'],
+    y: ['t', 'g', 'h', 'u'],
+    z: ['a', 's', 'x'],
+    '@': ['2', '!', '#'],
+    '.': [',', 'l', '/'],
   };
 
   for (let i = 0; i < text.length; i++) {
@@ -137,7 +137,7 @@ async function typeSlowly(page: Page, selector: string, text: string) {
       await sleep(200 + Math.random() * 400);
 
       // Delete the wrong character
-      await page.keyboard.press("Backspace", { delay: 50 + Math.random() * 100 });
+      await page.keyboard.press('Backspace', { delay: 50 + Math.random() * 100 });
       await sleep(100 + Math.random() * 200);
 
       // Maybe pause longer (thinking)
@@ -204,23 +204,23 @@ async function humanMouseMove(page: Page, targetX: number, targetY: number) {
 
 async function applyStealthScripts(page: Page) {
   await page.addInitScript(() => {
-    Object.defineProperty(navigator, "webdriver", { get: () => false });
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
 
-    Object.defineProperty(navigator, "plugins", {
+    Object.defineProperty(navigator, 'plugins', {
       get: () => [
-        { name: "Chrome PDF Plugin", filename: "internal-pdf-viewer" },
-        { name: "Chrome PDF Viewer", filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai" },
-        { name: "Native Client", filename: "internal-nacl-plugin" },
+        { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer' },
+        { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
+        { name: 'Native Client', filename: 'internal-nacl-plugin' },
       ],
     });
 
-    Object.defineProperty(navigator, "languages", {
-      get: () => ["en-US", "en"],
+    Object.defineProperty(navigator, 'languages', {
+      get: () => ['en-US', 'en'],
     });
 
     const originalQuery = window.navigator.permissions.query;
     window.navigator.permissions.query = (parameters: any) =>
-      parameters.name === "notifications"
+      parameters.name === 'notifications'
         ? Promise.resolve({ state: Notification.permission } as PermissionStatus)
         : originalQuery(parameters);
 
@@ -231,25 +231,25 @@ async function applyStealthScripts(page: Page) {
       app: { isInstalled: false },
     };
   });
-  log.info("Stealth scripts applied.");
+  log.info('Stealth scripts applied.');
 }
 
 // --- Session Persistence ---
 
 function saveSessionStorage(data: Record<string, string>) {
   fs.writeFileSync(SESSION_FILE, JSON.stringify(data, null, 2));
-  log.info("Session storage saved to disk.");
+  log.info('Session storage saved to disk.');
 }
 
 function loadSessionStorage(): Record<string, string> | null {
   try {
     if (fs.existsSync(SESSION_FILE)) {
-      const data = JSON.parse(fs.readFileSync(SESSION_FILE, "utf-8"));
-      log.info("Session storage loaded from disk.");
+      const data = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'));
+      log.info('Session storage loaded from disk.');
       return data;
     }
   } catch {
-    log.warn("Failed to load saved session.");
+    log.warn('Failed to load saved session.');
   }
   return null;
 }
@@ -269,7 +269,7 @@ async function captureSessionStorage(page: Page): Promise<Record<string, string>
 
 async function isLoggedIn(page: Page): Promise<boolean> {
   const url = page.url();
-  if (!url.includes("/login")) {
+  if (!url.includes('/login')) {
     return true;
   }
   const loginForm = await page.locator('input[name="name"]').count();
@@ -277,37 +277,37 @@ async function isLoggedIn(page: Page): Promise<boolean> {
 }
 
 async function login(page: Page) {
-  log.info("Entering email...");
+  log.info('Entering email...');
   await typeSlowly(page, 'input[name="name"]', EMAIL);
   await humanDelay(600, 1500);
 
   await humanMouseMove(page, 400 + Math.random() * 200, 380 + Math.random() * 50);
   await humanDelay(300, 700);
 
-  log.info("Entering password...");
+  log.info('Entering password...');
   await typeSlowly(page, 'input[name="password"]', PASSWORD);
   await humanDelay(1000, 2000);
 
   await humanMouseMove(page, 450 + Math.random() * 100, 450 + Math.random() * 50);
   await humanDelay(1200, 2800);
 
-  log.info("Submitting login...");
+  log.info('Submitting login...');
   await page.click('button[type="submit"]');
 
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState('networkidle');
   await humanDelay(3000, 5000);
 
-  if (page.url().includes("/login")) {
-    throw new Error("Login failed — still on login page after submit");
+  if (page.url().includes('/login')) {
+    throw new Error('Login failed — still on login page after submit');
   }
 
-  log.info("Login successful.");
+  log.info('Login successful.');
 }
 
 // --- Time Logic ---
 
 function parseTime(timeStr: string): { hours: number; minutes: number } {
-  const [hours, minutes] = timeStr.split(":").map(Number);
+  const [hours, minutes] = timeStr.split(':').map(Number);
   return { hours, minutes };
 }
 
@@ -316,7 +316,7 @@ function getCurrentMinutesSinceMidnight(): number {
   return now.getHours() * 60 + now.getMinutes();
 }
 
-type Action = "checkin" | "checkout" | "none";
+type Action = 'checkin' | 'checkout' | 'none';
 
 function determineAction(): Action {
   const now = getCurrentMinutesSinceMidnight();
@@ -325,10 +325,10 @@ function determineAction(): Action {
   const checkInMinutes = checkIn.hours * 60 + checkIn.minutes;
   const checkOutMinutes = checkOut.hours * 60 + checkOut.minutes;
 
-  // CHECK_OUT_TIME (e.g. 01:30) is smaller than CHECK_IN_TIME (e.g. 15:00)
+  // CHECK_OUT_TIME (e.g. 04:00) is smaller than CHECK_IN_TIME (e.g. 20:30)
   // meaning checkout is after midnight. The timeline across two days:
   //
-  //   00:00 ............. 01:30 ............. 15:00 ............. 23:59
+  //   00:00 ............. 04:00 ............. 20:30 ............. 23:59
   //   |-- checkin phase ---|-- checkout phase --|-- checkin phase ---------|
   //
   // Check-in phase: from CHECK_IN_TIME through midnight until CHECK_OUT_TIME
@@ -338,32 +338,32 @@ function determineAction(): Action {
   if (checkOutMinutes < checkInMinutes) {
     // Checkout time is after midnight (crosses day boundary)
     if (now >= checkInMinutes) {
-      // After check-in time today (e.g. 15:00 - 23:59) → check-in phase
-      return "checkin";
+      // After check-in time today (e.g. 20:30 - 23:59) → check-in phase
+      return 'checkin';
     } else if (now < checkOutMinutes) {
-      // After midnight but before checkout time (e.g. 00:00 - 01:29) → still check-in phase
-      return "checkin";
+      // After midnight but before checkout time (e.g. 00:00 - 03:59) → still check-in phase
+      return 'checkin';
     } else {
-      // After checkout time, before next check-in (e.g. 01:30 - 14:59) → checkout phase
-      return "checkout";
+      // After checkout time, before next check-in (e.g. 04:00 - 20:29) → checkout phase
+      return 'checkout';
     }
   } else {
     // Normal case: checkout time is after check-in time within same day
     if (now >= checkInMinutes && now < checkOutMinutes) {
-      return "checkin";
+      return 'checkin';
     } else if (now >= checkOutMinutes) {
-      return "checkout";
+      return 'checkout';
     } else {
-      return "none";
+      return 'none';
     }
   }
 }
 
 // --- Human-like Button Click ---
 
-async function humanClickButton(page: Page, button: ReturnType<Page["locator"]>, label: string) {
+async function humanClickButton(page: Page, button: ReturnType<Page['locator']>, label: string) {
   // Scroll back to top for a clean view
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   await humanDelay(1500, 2500);
 
   // Look around the page like a human
@@ -407,7 +407,7 @@ async function humanClickButton(page: Page, button: ReturnType<Page["locator"]>,
   await page.mouse.click(targetX, targetY);
 
   // Wait for network response
-  await page.waitForLoadState("networkidle", { timeout: 15000 });
+  await page.waitForLoadState('networkidle', { timeout: 15000 });
   await humanDelay(5000, 8000);
 
   // Take post-click screenshot
@@ -419,80 +419,80 @@ async function humanClickButton(page: Page, button: ReturnType<Page["locator"]>,
 // --- Attendance Actions ---
 
 async function performCheckIn(page: Page) {
-  log.info("--- Starting check-in process ---");
+  log.info('--- Starting check-in process ---');
 
-  log.info("Waiting for JS to fully initialize...");
+  log.info('Waiting for JS to fully initialize...');
   await humanDelay(4000, 6000);
 
   const checkInButton = page.locator('button', { hasText: /^[\s\S]*Check In[\s\S]*$/ }).first();
-  await checkInButton.waitFor({ state: "visible", timeout: 15000 });
-  log.info("Check In button is visible.");
+  await checkInButton.waitFor({ state: 'visible', timeout: 15000 });
+  log.info('Check In button is visible.');
 
   const isDisabled = await checkInButton.isDisabled();
   if (isDisabled) {
-    log.info("Check In button is DISABLED — already checked in. Nothing to do.");
-    const filePath = screenshotPath("checkin-already-done");
+    log.info('Check In button is DISABLED — already checked in. Nothing to do.');
+    const filePath = screenshotPath('checkin-already-done');
     await page.screenshot({ path: filePath, fullPage: true });
     log.info(`Screenshot saved to ${filePath}`);
     return;
   }
 
-  log.info("Check In button is enabled. Proceeding with check-in...");
-  await humanClickButton(page, checkInButton, "checkin");
+  log.info('Check In button is enabled. Proceeding with check-in...');
+  await humanClickButton(page, checkInButton, 'checkin');
 
   // Verify: Check Out button should now be enabled
   const checkOutButton = page.locator('button', { hasText: /^[\s\S]*Check Out[\s\S]*$/ }).first();
   const checkOutEnabled = await checkOutButton.isEnabled().catch(() => false);
   if (checkOutEnabled) {
-    log.info("Check-in SUCCESSFUL — Check Out button is now enabled.");
+    log.info('Check-in SUCCESSFUL — Check Out button is now enabled.');
   } else {
-    log.warn("Check-in status unclear — please verify from the post-checkin screenshot.");
+    log.warn('Check-in status unclear — please verify from the post-checkin screenshot.');
   }
 
-  log.info("--- Check-in process completed ---");
+  log.info('--- Check-in process completed ---');
 }
 
 async function performCheckOut(page: Page) {
-  log.info("--- Starting check-out process ---");
+  log.info('--- Starting check-out process ---');
 
-  log.info("Waiting for JS to fully initialize...");
+  log.info('Waiting for JS to fully initialize...');
   await humanDelay(4000, 6000);
 
   const checkOutButton = page.locator('button', { hasText: /^[\s\S]*Check Out[\s\S]*$/ }).first();
-  await checkOutButton.waitFor({ state: "visible", timeout: 15000 });
-  log.info("Check Out button is visible.");
+  await checkOutButton.waitFor({ state: 'visible', timeout: 15000 });
+  log.info('Check Out button is visible.');
 
   const isDisabled = await checkOutButton.isDisabled();
   if (isDisabled) {
-    log.info("Check Out button is DISABLED — already checked out. Nothing to do.");
-    const filePath = screenshotPath("checkout-already-done");
+    log.info('Check Out button is DISABLED — already checked out. Nothing to do.');
+    const filePath = screenshotPath('checkout-already-done');
     await page.screenshot({ path: filePath, fullPage: true });
     log.info(`Screenshot saved to ${filePath}`);
     return;
   }
 
-  log.info("Check Out button is enabled. Proceeding with check-out...");
-  await humanClickButton(page, checkOutButton, "checkout");
+  log.info('Check Out button is enabled. Proceeding with check-out...');
+  await humanClickButton(page, checkOutButton, 'checkout');
 
   // Verify: Check In button should now be enabled (reset for next day)
   const checkInButton = page.locator('button', { hasText: /^[\s\S]*Check In[\s\S]*$/ }).first();
   const checkInEnabled = await checkInButton.isEnabled().catch(() => false);
   if (checkInEnabled) {
-    log.info("Check-out SUCCESSFUL — Check In button is now enabled (reset).");
+    log.info('Check-out SUCCESSFUL — Check In button is now enabled (reset).');
   } else {
-    log.warn("Check-out status unclear — please verify from the post-checkout screenshot.");
+    log.warn('Check-out status unclear — please verify from the post-checkout screenshot.');
   }
 
-  log.info("--- Check-out process completed ---");
+  log.info('--- Check-out process completed ---');
 }
 
 // --- Main ---
 
 async function main() {
-  log.info("=== Attendance script started ===");
+  log.info('=== Attendance script started ===');
 
   if (!EMAIL || !PASSWORD) {
-    log.error("Missing HRMS_EMAIL or HRMS_PASSWORD in .env file");
+    log.error('Missing HRMS_EMAIL or HRMS_PASSWORD in .env file');
     process.exit(1);
   }
 
@@ -500,26 +500,26 @@ async function main() {
   let page: Page | null = null;
 
   try {
-    log.info("Launching browser...");
+    log.info('Launching browser...');
     context = await chromium.launchPersistentContext(USER_DATA_DIR, {
       headless: false,
-      channel: "chrome",
+      channel: 'chrome',
       viewport: null,
       userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-      permissions: ["geolocation"],
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      permissions: ['geolocation'],
       args: [
-        "--start-maximized",
-        "--disable-infobars",
-        "--no-first-run",
-        "--no-default-browser-check",
+        '--start-maximized',
+        '--disable-infobars',
+        '--no-first-run',
+        '--no-default-browser-check',
         `--load-extension=${ADGUARD_PATH}`,
       ],
-      ignoreDefaultArgs: ["--enable-automation", "--no-sandbox", "--disable-extensions"],
-      locale: "en-US",
-      timezoneId: "Asia/Karachi",
+      ignoreDefaultArgs: ['--enable-automation', '--no-sandbox', '--disable-extensions'],
+      locale: 'en-US',
+      timezoneId: 'Asia/Karachi',
     });
-    log.info("Browser launched.");
+    log.info('Browser launched.');
 
     page = context.pages()[0] || (await context.newPage());
     await applyStealthScripts(page);
@@ -527,18 +527,18 @@ async function main() {
     // Restore session storage before the page loads via init script
     const savedSession = loadSessionStorage();
     if (savedSession) {
-      await page.addInitScript((sessionData) => {
+      await page.addInitScript(sessionData => {
         for (const [key, value] of Object.entries(sessionData)) {
           sessionStorage.setItem(key, value);
         }
       }, savedSession);
-      log.info("Session restore script injected.");
+      log.info('Session restore script injected.');
     } else {
-      log.info("No saved session found. Will perform fresh login.");
+      log.info('No saved session found. Will perform fresh login.');
     }
 
     log.info(`Navigating to ${HRMS_DASHBOARD}...`);
-    await page.goto(HRMS_DASHBOARD, { waitUntil: "networkidle" });
+    await page.goto(HRMS_DASHBOARD, { waitUntil: 'networkidle' });
     log.info(`Page loaded. Current URL: ${page.url()}`);
 
     await humanDelay(2000, 3500);
@@ -546,7 +546,7 @@ async function main() {
     await humanDelay(500, 1000);
 
     if (await isLoggedIn(page)) {
-      log.info("Already logged in. Skipping login.");
+      log.info('Already logged in. Skipping login.');
     } else {
       log.info(`Logging in as ${EMAIL}...`);
       await login(page);
@@ -557,7 +557,7 @@ async function main() {
     saveSessionStorage(sessionData);
 
     // Scroll down slightly like a user checking the dashboard
-    log.info("Scrolling dashboard...");
+    log.info('Scrolling dashboard...');
     for (let i = 0; i < 2; i++) {
       const scrollAmount = 150 + Math.floor(Math.random() * 200);
       const steps = 6 + Math.floor(Math.random() * 4);
@@ -571,15 +571,17 @@ async function main() {
     // Determine action based on current time
     const action = determineAction();
     const now = new Date();
-    log.info(`Current time: ${now.toLocaleTimeString("en-US", { hour12: true, timeZone: "Asia/Karachi" })} | CHECK_IN_TIME: ${CHECK_IN_TIME} | CHECK_OUT_TIME: ${CHECK_OUT_TIME} | Action: ${action}`);
+    log.info(
+      `Current time: ${now.toLocaleTimeString('en-US', { hour12: true, timeZone: 'Asia/Karachi' })} | CHECK_IN_TIME: ${CHECK_IN_TIME} | CHECK_OUT_TIME: ${CHECK_OUT_TIME} | Action: ${action}`,
+    );
 
-    if (action === "checkin") {
+    if (action === 'checkin') {
       await performCheckIn(page);
-    } else if (action === "checkout") {
+    } else if (action === 'checkout') {
       await performCheckOut(page);
     } else {
-      log.info("Outside check-in/check-out windows. Nothing to do.");
-      const filePath = screenshotPath("no-action");
+      log.info('Outside check-in/check-out windows. Nothing to do.');
+      const filePath = screenshotPath('no-action');
       await page.screenshot({ path: filePath, fullPage: true });
       log.info(`Screenshot saved to ${filePath}`);
     }
@@ -589,14 +591,14 @@ async function main() {
     const message = err instanceof Error ? err.message : String(err);
     log.error(`Unexpected error: ${message}`);
     if (page) {
-      await takeErrorScreenshot(page, "crash");
+      await takeErrorScreenshot(page, 'crash');
     }
   } finally {
     if (context) {
-      log.info("Closing browser...");
+      log.info('Closing browser...');
       await context.close();
     }
-    log.info("=== Attendance script finished ===");
+    log.info('=== Attendance script finished ===');
   }
 }
 

@@ -4,8 +4,8 @@
 # Handles: public holiday skipping, random delay within window, env setup
 #
 # Usage:
-#   run-attendance.sh checkin    → used for 2:31-3:15 PM window (Mon-Fri)
-#   run-attendance.sh checkout   → used for 1:31-2:15 AM window (Tue-Sat)
+#   run-attendance.sh checkin    → used for 8:31-9:15 PM window (Mon-Fri)
+#   run-attendance.sh checkout   → used for 4:01-4:45 AM window (Tue-Sat)
 # =============================================================================
 
 set -euo pipefail
@@ -27,12 +27,12 @@ log() {
 
 # ---------------------------------------------------------------------------
 # Tell the attendance script when check-in vs check-out phases begin.
-# CHECK_IN_TIME=14:30 → at 2:30 PM onwards, the script will check in.
-# CHECK_OUT_TIME=01:30 → from 1:30 AM until 2:30 PM, the script checks out.
+# CHECK_IN_TIME=20:30 → at 8:30 PM onwards, the script will check in.
+# CHECK_OUT_TIME=04:00 → from 4:00 AM until 8:30 PM, the script checks out.
 # These are read by the TypeScript script via dotenv — exporting here overrides .env.
 # ---------------------------------------------------------------------------
-export CHECK_IN_TIME="14:30"
-export CHECK_OUT_TIME="01:30"
+export CHECK_IN_TIME="20:30"
+export CHECK_OUT_TIME="04:00"
 
 # ---------------------------------------------------------------------------
 # Pakistan Federal Public Holidays (non-working days)
@@ -86,7 +86,7 @@ fi
 
 # ---------------------------------------------------------------------------
 # Random delay: 0–2640 seconds (0–44 minutes)
-# Window: 2:31–3:15 PM (checkin) or 1:31–2:15 AM (checkout) = 44 min each
+# Window: 8:31–9:15 PM (checkin) or 4:01–4:45 AM (checkout) = 44 min each
 # Using two RANDOM calls to get a wider range before modulo (reduces bias)
 # ---------------------------------------------------------------------------
 MIN_DELAY=60    # at least 1 minute — never fire exactly at cron trigger time
