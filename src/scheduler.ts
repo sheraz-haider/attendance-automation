@@ -85,13 +85,13 @@ function runAttendance() {
   }, delay);
 }
 
-function timeToCron(time: string): string {
+function timeToCron(time: string, daysOfWeek: string): string {
   const [hour, minute] = time.split(":").map(Number);
-  return `${minute} ${hour} * * 1-5`;
+  return `${minute} ${hour} * * ${daysOfWeek}`;
 }
 
-const checkInCron = timeToCron(CHECK_IN_TIME);
-const checkOutCron = timeToCron(CHECK_OUT_TIME);
+const checkInCron = timeToCron(CHECK_IN_TIME, "1-5");   // Mon-Fri
+const checkOutCron = timeToCron(CHECK_OUT_TIME, "2-6"); // Tue-Sat (after midnight)
 
 log(`Scheduling check-in:  "${checkInCron}" (${CHECK_IN_TIME}) Mon-Fri ${TIMEZONE}`);
 log(`Scheduling check-out: "${checkOutCron}" (${CHECK_OUT_TIME}) Mon-Fri ${TIMEZONE}`);
