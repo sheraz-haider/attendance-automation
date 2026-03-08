@@ -55,7 +55,7 @@ function log(message: string) {
 }
 
 function randomDelay(): number {
-  return Math.floor(Math.random() * 15 * 60 * 1000); // 0–15 minutes in ms
+  return Math.floor((1 + Math.random() * 34) * 60 * 1000); // 1–35 minutes in ms
 }
 
 function shouldSkipToday(): boolean {
