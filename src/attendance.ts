@@ -501,7 +501,7 @@ async function main() {
     context = await chromium.launchPersistentContext(USER_DATA_DIR, {
       headless: true,
       channel: "chrome",
-      viewport: null,
+      viewport: { width: 1920, height: 1080 },
       userAgent:
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
       permissions: ["geolocation"],
