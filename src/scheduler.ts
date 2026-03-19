@@ -23,6 +23,7 @@ const SKIP_DATES: Set<string> = new Set([
   "2026-12-25", // Quaid-e-Azam Day
 
   // Eid ul-Fitr (1–3 Shawwal)
+  "2026-03-20",
   "2026-03-21",
   "2026-03-22",
   "2026-03-23",
@@ -54,34 +55,48 @@ function log(message: string) {
   fs.appendFileSync(LOG_FILE, line);
 }
 
+function getKarachiDate(date = new Date()): string {
+  return date.toLocaleDateString("en-CA", { timeZone: TIMEZONE }); // YYYY-MM-DD
+}
+
+function shiftKarachiDate(dateStr: string, days: number): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+  utcDate.setUTCDate(utcDate.getUTCDate() + days);
+  return getKarachiDate(utcDate);
+}
+
 function randomDelay(): number {
   return Math.floor((1 + Math.random() * 34) * 60 * 1000); // 1–35 minutes in ms
 }
 
-function shouldSkipToday(): boolean {
-  const dateStr = new Date().toLocaleDateString("en-CA", { timeZone: TIMEZONE }); // YYYY-MM-DD
+function shouldSkipRun(kind: "check-in" | "check-out"): boolean {
+  const executionDate = getKarachiDate();
+  const attendanceDate = kind === "check-out" ? shiftKarachiDate(executionDate, -1) : executionDate;
 
-  if (SKIP_DATES.has(dateStr)) {
-    log(`Skipping today (${dateStr}) — date is in SKIP_DATES.`);
+  if (SKIP_DATES.has(attendanceDate)) {
+    log(
+      `Skipping ${kind} for attendance date ${attendanceDate} (execution date ${executionDate}) — date is in SKIP_DATES.`
+    );
     return true;
   }
   return false;
 }
 
-function runAttendance() {
-  if (shouldSkipToday()) return;
+function runAttendance(kind: "check-in" | "check-out") {
+  if (shouldSkipRun(kind)) return;
 
   const delay = randomDelay();
   const delayMin = (delay / 60000).toFixed(1);
-  log(`Triggering attendance script after ${delayMin} min random delay...`);
+  log(`Triggering ${kind} script after ${delayMin} min random delay...`);
 
   setTimeout(() => {
-    log("Executing attendance script now.");
+    log(`Executing ${kind} script now.`);
     const child = exec(`npx ts-node src/attendance.ts`, { cwd: PROJECT_DIR });
 
     child.stdout?.on("data", (data) => fs.appendFileSync(LOG_FILE, data));
     child.stderr?.on("data", (data) => fs.appendFileSync(LOG_FILE, data));
-    child.on("close", (code) => log(`Attendance script exited with code ${code}`));
+    child.on("close", (code) => log(`${kind} script exited with code ${code}`));
   }, delay);
 }
 
@@ -97,7 +112,7 @@ log(`Scheduling check-in:  "${checkInCron}" (${CHECK_IN_TIME}) Mon-Fri ${TIMEZON
 log(`Scheduling check-out: "${checkOutCron}" (${CHECK_OUT_TIME}) Mon-Fri ${TIMEZONE}`);
 if (SKIP_DATES.size > 0) log(`Skip dates: ${[...SKIP_DATES].join(", ")}`);
 
-cron.schedule(checkInCron, runAttendance, { timezone: TIMEZONE });
-cron.schedule(checkOutCron, runAttendance, { timezone: TIMEZONE });
+cron.schedule(checkInCron, () => runAttendance("check-in"), { timezone: TIMEZONE });
+cron.schedule(checkOutCron, () => runAttendance("check-out"), { timezone: TIMEZONE });
 
 log("Scheduler running. Press Ctrl+C to stop.");
