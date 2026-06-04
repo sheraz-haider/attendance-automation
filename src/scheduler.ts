@@ -13,6 +13,9 @@ const TIMEZONE = "Asia/Karachi";
 // Dates to skip (YYYY-MM-DD) — Pakistan federal public holidays 2026
 // Islamic dates are approximate and subject to moon sighting
 const SKIP_DATES: Set<string> = new Set([
+  // Personal leave
+  "2026-06-05",
+
   // National holidays
   "2026-02-05", // Kashmir Day
   "2026-03-23", // Pakistan Day
