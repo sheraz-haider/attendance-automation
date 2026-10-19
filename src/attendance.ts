@@ -279,6 +279,29 @@ async function isLoggedIn(page: Page): Promise<boolean> {
   return loginForm === 0;
 }
 
+async function dismissAlreadyLoggedInModal(page: Page): Promise<boolean> {
+  // HRMS shows an "Already Logged In" modal when another active session exists
+  // (e.g. phone/PWA). It offers "Exit" and "Log Out" — we confirm "Log Out"
+  // to clear the stale session, then the caller retries login.
+  const logoutButton = page
+    .locator("button:visible")
+    .filter({ hasText: /^\s*Log\s*Out\s*$/i })
+    .first();
+
+  const count = await logoutButton.count().catch(() => 0);
+  if (count === 0) {
+    return false;
+  }
+
+  log.warn('Detected "Already Logged In" modal — logging out the stale session...');
+  await humanDelay(800, 1500);
+  await logoutButton.click();
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await humanDelay(2000, 3500);
+  log.info("Stale session logged out.");
+  return true;
+}
+
 async function login(page: Page) {
   log.info("Entering email...");
   await typeSlowly(page, 'input[name="name"]', EMAIL);
@@ -301,7 +324,25 @@ async function login(page: Page) {
   await humanDelay(3000, 5000);
 
   if (page.url().includes("/login")) {
-    throw new Error("Login failed — still on login page after submit");
+    const dismissed = await dismissAlreadyLoggedInModal(page);
+    if (dismissed) {
+      // "Log Out" on the modal clears the other session AND completes this
+      // login — the site usually redirects straight to the dashboard.
+      await humanDelay(2000, 4000);
+    }
+    if (page.url().includes("/login")) {
+      log.info("Retrying login after clearing stale session...");
+      await typeSlowly(page, 'input[name="name"]', EMAIL);
+      await humanDelay(600, 1200);
+      await typeSlowly(page, 'input[name="password"]', PASSWORD);
+      await humanDelay(800, 1600);
+      await page.click('button[type="submit"]');
+      await page.waitForLoadState("networkidle");
+      await humanDelay(3000, 5000);
+      if (page.url().includes("/login")) {
+        throw new Error("Login failed — still on login page after submit");
+      }
+    }
   }
 
   log.info("Login successful.");
@@ -424,6 +465,21 @@ async function humanClickButton(page: Page, button: ReturnType<Page["locator"]>,
 async function performCheckIn(page: Page) {
   log.info("--- Starting check-in process ---");
 
+  // If a Check Out button is visible, we're already checked in
+  // (e.g. manual check-in from phone earlier). Nothing to do.
+  const alreadyIn = await page
+    .locator("button", { hasText: /^[\s\S]*Check Out[\s\S]*$/ })
+    .first()
+    .isVisible()
+    .catch(() => false);
+  if (alreadyIn) {
+    log.info("Check Out button visible — already checked in (manual check-in?). Nothing to do.");
+    const filePath = screenshotPath("checkin-already-done");
+    await page.screenshot({ path: filePath, fullPage: true });
+    log.info(`Screenshot saved to ${filePath}`);
+    return;
+  }
+
   const checkInButton = page.locator('button', { hasText: /^[\s\S]*Check In[\s\S]*$/ }).first();
   await checkInButton.waitFor({ state: "visible", timeout: 15000 });
   log.info("Check In button is visible.");
@@ -454,6 +510,21 @@ async function performCheckIn(page: Page) {
 
 async function performCheckOut(page: Page) {
   log.info("--- Starting check-out process ---");
+
+  // If a Check In button is visible, we're already checked out
+  // (e.g. manual check-out earlier). Nothing to do.
+  const alreadyOut = await page
+    .locator("button", { hasText: /^[\s\S]*Check In[\s\S]*$/ })
+    .first()
+    .isVisible()
+    .catch(() => false);
+  if (alreadyOut) {
+    log.info("Check In button visible — already checked out (manual check-out?). Nothing to do.");
+    const filePath = screenshotPath("checkout-already-done");
+    await page.screenshot({ path: filePath, fullPage: true });
+    log.info(`Screenshot saved to ${filePath}`);
+    return;
+  }
 
   const checkOutButton = page.locator('button', { hasText: /^[\s\S]*Check Out[\s\S]*$/ }).first();
   await checkOutButton.waitFor({ state: "visible", timeout: 15000 });
